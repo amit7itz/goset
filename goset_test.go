@@ -68,3 +68,26 @@ func TestSet_Remove(t *testing.T) {
 	require.NoError(t, s.Remove(1))
 	require.Error(t, s.Remove(1)) // should return error if item not found
 }
+
+func TestSet_Intersection(t *testing.T) {
+	s1 := FromSlice[string]([]string{"a", "b", "c", "d", "e", "f"})
+	s2 := FromSlice[string]([]string{"a", "", "c", "d", "e"})
+	s3 := FromSlice[string]([]string{"z", "d", "e", "k"})
+	intersection := s1.Intersection(s2, s3)
+	require.True(t, intersection.Eq(FromSlice[string]([]string{"e", "d"})))
+}
+
+func TestSet_Difference(t *testing.T) {
+	s1 := FromSlice[string]([]string{"a", "b", "c", "d", "e", "f"})
+	s2 := FromSlice[string]([]string{"a", "", "c", "d", "e"})
+	s3 := FromSlice[string]([]string{"z", "d", "e", "k"})
+	difference := s1.Difference(s2, s3)
+	require.True(t, difference.Eq(FromSlice[string]([]string{"b", "f"})))
+}
+
+func TestSet_SymmetricDifference(t *testing.T) {
+	s1 := FromSlice[string]([]string{"a", "b", "c", "d", "e", "f"})
+	s2 := FromSlice[string]([]string{"z", "d", "e", "k"})
+	difference := s1.SymmetricDifference(s2)
+	require.True(t, difference.Eq(FromSlice[string]([]string{"a", "b", "c", "f", "z", "k"})))
+}

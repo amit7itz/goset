@@ -62,12 +62,6 @@ func (s *Set[T]) Copy() *Set[T] {
 	return set
 }
 
-func (s *Set[T]) Union(sets ...*Set[T]) *Set[T] {
-	unionSet := s.Copy()
-	unionSet.Update(sets...)
-	return unionSet
-}
-
 func (s *Set[T]) ToSlice() []T {
 	slice := make([]T, 0)
 	for item := range s.store {
@@ -78,4 +72,59 @@ func (s *Set[T]) ToSlice() []T {
 
 func (s *Set[T]) Eq(set *Set[T]) bool {
 	return reflect.DeepEqual(s, set)
+}
+
+func (s *Set[T]) Union(sets ...*Set[T]) *Set[T] {
+	unionSet := s.Copy()
+	unionSet.Update(sets...)
+	return unionSet
+}
+
+func (s *Set[T]) Intersection(sets ...*Set[T]) *Set[T] {
+	intersectionSet := NewSet[T]()
+	for item := range s.store {
+		inAllOthers := true
+		for _, set := range sets {
+			if !set.Contains(item) {
+				inAllOthers = false
+				break
+			}
+		}
+		if inAllOthers {
+			intersectionSet.Add(item)
+		}
+	}
+	return intersectionSet
+}
+
+func (s *Set[T]) Difference(sets ...*Set[T]) *Set[T] {
+	differenceSet := NewSet[T]()
+	for item := range s.store {
+		inAnyOther := false
+		for _, set := range sets {
+			if set.Contains(item) {
+				inAnyOther = true
+				break
+			}
+		}
+		if !inAnyOther {
+			differenceSet.Add(item)
+		}
+	}
+	return differenceSet
+}
+
+func (s *Set[T]) SymmetricDifference(set *Set[T]) *Set[T] {
+	symmetricDifferenceSet := NewSet[T]()
+	for item := range s.store {
+		if !set.Contains(item) {
+			symmetricDifferenceSet.Add(item)
+		}
+	}
+	for item := range set.store {
+		if !s.Contains(item) {
+			symmetricDifferenceSet.Add(item)
+		}
+	}
+	return symmetricDifferenceSet
 }
