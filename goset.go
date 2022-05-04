@@ -1,6 +1,7 @@
 package goset
 
 import (
+	"errors"
 	"fmt"
 	"reflect"
 )
@@ -41,6 +42,10 @@ func (s *Set[T]) Len() int {
 	return len(s.store)
 }
 
+func (s *Set[T]) IsEmpty() bool {
+	return len(s.store) == 0
+}
+
 func (s *Set[T]) Contains(item T) bool {
 	_, ok := s.store[item]
 	return ok
@@ -52,6 +57,18 @@ func (s *Set[T]) Update(sets ...*Set[T]) {
 			s.Add(item)
 		}
 	}
+}
+
+func (s *Set[T]) Pop() (T, error) {
+	var item T
+	if s.IsEmpty() {
+		return item, errors.New("set is empty")
+	}
+	for item = range s.store {
+		break
+	}
+	s.Discard(item)
+	return item, nil
 }
 
 func (s *Set[T]) Copy() *Set[T] {
@@ -127,4 +144,18 @@ func (s *Set[T]) SymmetricDifference(set *Set[T]) *Set[T] {
 		}
 	}
 	return symmetricDifferenceSet
+}
+
+func (s *Set[T]) IsDisjoint(set *Set[T]) bool {
+	intersection := s.Intersection(set)
+	return intersection.IsEmpty()
+}
+
+func (s *Set[T]) IsSubset(set *Set[T]) bool {
+	intersection := s.Intersection(set)
+	return intersection.Len() == s.Len()
+}
+
+func (s *Set[T]) IsSuperset(set *Set[T]) bool {
+	return set.IsSubset(s)
 }
