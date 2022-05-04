@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"reflect"
+	"strings"
 )
 
 type Set[T comparable] struct {
@@ -20,6 +21,17 @@ func FromSlice[T comparable](slice []T) *Set[T] {
 		set.Add(item)
 	}
 	return set
+}
+
+func (s *Set[T]) String() string {
+	str := "Set{"
+	items_str := make([]string, 0)
+	for item := range s.store {
+		items_str = append(items_str, fmt.Sprintf("%v", item))
+	}
+	str += strings.Join(items_str, " ")
+	str += "}"
+	return str
 }
 
 func (s *Set[T]) Add(item T) {

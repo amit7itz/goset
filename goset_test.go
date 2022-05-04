@@ -1,6 +1,7 @@
 package goset
 
 import (
+	"fmt"
 	"github.com/stretchr/testify/require"
 	"testing"
 )
@@ -152,4 +153,11 @@ func TestSet_IsDisjoint(t *testing.T) {
 	require.False(t, s1.IsDisjoint(s2))
 	s3 := FromSlice[string]([]string{"g", "h", "i"})
 	require.True(t, s1.IsDisjoint(s3))
+}
+
+func TestSet_String(t *testing.T) {
+	s := FromSlice[string]([]string{"a", "b"})
+	str := fmt.Sprintf("%v", s)
+	possibleOutputs := []string{"Set{a b}", "Set{b a}"}
+	require.Contains(t, possibleOutputs, str)
 }
