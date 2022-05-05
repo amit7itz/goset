@@ -7,14 +7,18 @@ import (
 	"strings"
 )
 
+// Set represents a set data structure.
+// You should not call it directly, but to use NewSet() or FromSlice()
 type Set[T comparable] struct {
 	store map[T]struct{}
 }
 
+// NewSet returns a new empty Set
 func NewSet[T comparable]() *Set[T] {
 	return &Set[T]{store: make(map[T]struct{}, 0)}
 }
 
+// FromSlice returns a new Set with all the items of the slice.
 func FromSlice[T comparable](slice []T) *Set[T] {
 	set := NewSet[T]()
 	for _, item := range slice {
@@ -23,6 +27,7 @@ func FromSlice[T comparable](slice []T) *Set[T] {
 	return set
 }
 
+// String returns a string that represents the Set
 func (s *Set[T]) String() string {
 	str := "Set{"
 	items_str := make([]string, 0)
@@ -34,43 +39,51 @@ func (s *Set[T]) String() string {
 	return str
 }
 
+// Add adds an item to the Set
 func (s *Set[T]) Add(item T) {
 	s.store[item] = struct{}{}
 }
 
+// Remove removes an item from the Set. Returns error if the item is not in the Set.
 func (s *Set[T]) Remove(item T) error {
 	if s.Contains(item) {
 		delete(s.store, item)
 		return nil
 	}
-	return fmt.Errorf("KeyError: %v", item)
+	return fmt.Errorf("item not found: %v ", item)
 }
 
+// Discard removes an item from the Set if exists.
 func (s *Set[T]) Discard(item T) {
 	delete(s.store, item)
 }
 
+// Len returns the number of items in the Set
 func (s *Set[T]) Len() int {
 	return len(s.store)
 }
 
+// IsEmpty returns true if there are no items in the Set
 func (s *Set[T]) IsEmpty() bool {
 	return len(s.store) == 0
 }
 
+// Contains returns whether an item is in the Set
 func (s *Set[T]) Contains(item T) bool {
 	_, ok := s.store[item]
 	return ok
 }
 
-func (s *Set[T]) Update(sets ...*Set[T]) {
-	for _, set := range sets {
-		for item := range set.store {
+// Update adds all the items from the other Sets to the current Set
+func (s *Set[T]) Update(others ...*Set[T]) {
+	for _, other := range others {
+		for item := range other.store {
 			s.Add(item)
 		}
 	}
 }
 
+// Pop removes an arbitrary item from the Set and returns it. Returns error if the Set is empty.
 func (s *Set[T]) Pop() (T, error) {
 	var item T
 	if s.IsEmpty() {
@@ -83,6 +96,7 @@ func (s *Set[T]) Pop() (T, error) {
 	return item, nil
 }
 
+// Copy returns a new Set with the same items as the current Set
 func (s *Set[T]) Copy() *Set[T] {
 	set := NewSet[T]()
 	for item := range s.store {
@@ -91,30 +105,34 @@ func (s *Set[T]) Copy() *Set[T] {
 	return set
 }
 
-func (s *Set[T]) ToSlice() []T {
-	slice := make([]T, 0)
+// Items returns a slice of all the Set items
+func (s *Set[T]) Items() []T {
+	items := make([]T, 0)
 	for item := range s.store {
-		slice = append(slice, item)
+		items = append(items, item)
 	}
-	return slice
+	return items
 }
 
-func (s *Set[T]) Eq(set *Set[T]) bool {
-	return reflect.DeepEqual(s, set)
+// Equal returns whether the current Set and the other one have the same items
+func (s *Set[T]) Equal(other *Set[T]) bool {
+	return reflect.DeepEqual(s, other)
 }
 
-func (s *Set[T]) Union(sets ...*Set[T]) *Set[T] {
+// Union returns a new Set of the items from the current set and all others
+func (s *Set[T]) Union(others ...*Set[T]) *Set[T] {
 	unionSet := s.Copy()
-	unionSet.Update(sets...)
+	unionSet.Update(others...)
 	return unionSet
 }
 
-func (s *Set[T]) Intersection(sets ...*Set[T]) *Set[T] {
+// Intersection returns a new Set with the common items of the current set and all others.
+func (s *Set[T]) Intersection(others ...*Set[T]) *Set[T] {
 	intersectionSet := NewSet[T]()
 	for item := range s.store {
 		inAllOthers := true
-		for _, set := range sets {
-			if !set.Contains(item) {
+		for _, other := range others {
+			if !other.Contains(item) {
 				inAllOthers = false
 				break
 			}
@@ -126,12 +144,13 @@ func (s *Set[T]) Intersection(sets ...*Set[T]) *Set[T] {
 	return intersectionSet
 }
 
-func (s *Set[T]) Difference(sets ...*Set[T]) *Set[T] {
+// Difference returns a new Set of all the items in the current Set that are not in any of the others
+func (s *Set[T]) Difference(others ...*Set[T]) *Set[T] {
 	differenceSet := NewSet[T]()
 	for item := range s.store {
 		inAnyOther := false
-		for _, set := range sets {
-			if set.Contains(item) {
+		for _, other := range others {
+			if other.Contains(item) {
 				inAnyOther = true
 				break
 			}
@@ -143,14 +162,15 @@ func (s *Set[T]) Difference(sets ...*Set[T]) *Set[T] {
 	return differenceSet
 }
 
-func (s *Set[T]) SymmetricDifference(set *Set[T]) *Set[T] {
+// SymmetricDifference returns all the items that exist in only one of the Sets
+func (s *Set[T]) SymmetricDifference(other *Set[T]) *Set[T] {
 	symmetricDifferenceSet := NewSet[T]()
 	for item := range s.store {
-		if !set.Contains(item) {
+		if !other.Contains(item) {
 			symmetricDifferenceSet.Add(item)
 		}
 	}
-	for item := range set.store {
+	for item := range other.store {
 		if !s.Contains(item) {
 			symmetricDifferenceSet.Add(item)
 		}
@@ -158,16 +178,19 @@ func (s *Set[T]) SymmetricDifference(set *Set[T]) *Set[T] {
 	return symmetricDifferenceSet
 }
 
-func (s *Set[T]) IsDisjoint(set *Set[T]) bool {
-	intersection := s.Intersection(set)
+// IsDisjoint returns whether the two Sets have no item in common
+func (s *Set[T]) IsDisjoint(other *Set[T]) bool {
+	intersection := s.Intersection(other)
 	return intersection.IsEmpty()
 }
 
-func (s *Set[T]) IsSubset(set *Set[T]) bool {
-	intersection := s.Intersection(set)
+// IsSubset returns whether all the items of the current set exist in the other one
+func (s *Set[T]) IsSubset(other *Set[T]) bool {
+	intersection := s.Intersection(other)
 	return intersection.Len() == s.Len()
 }
 
-func (s *Set[T]) IsSuperset(set *Set[T]) bool {
-	return set.IsSubset(s)
+// IsSuperset returns whether all the items of the other set exist in the current one
+func (s *Set[T]) IsSuperset(other *Set[T]) bool {
+	return other.IsSubset(s)
 }
