@@ -154,3 +154,11 @@ func TestSet_String(t *testing.T) {
 	possibleOutputs := []string{"Set[string]{a b}", "Set{b a}"}
 	require.Contains(t, possibleOutputs, str)
 }
+
+func TestSetWithStruct(t *testing.T) {
+	type Person struct {
+		Name string
+	}
+	peopleSet := NewSet(Person{Name: "Amit"}, Person{Name: "Amit"})
+	require.Equal(t, peopleSet.Len(), 1)
+}

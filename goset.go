@@ -123,9 +123,17 @@ func (s *Set[T]) Items() []T {
 	return items
 }
 
-// Equal returns whether the current Set and the other one have the same items
+// Equal returns whether the current Set contains the same items as the other one
 func (s *Set[T]) Equal(other *Set[T]) bool {
-	return reflect.DeepEqual(s, other)
+	if s.Len() != other.Len() {
+		return false
+	}
+	for item := range s.store {
+		if !other.Contains(item) {
+			return false
+		}
+	}
+	return true
 }
 
 // Union returns a new Set of the items from the current set and all others
