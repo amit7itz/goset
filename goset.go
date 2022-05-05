@@ -29,12 +29,13 @@ func FromSlice[T comparable](slice []T) *Set[T] {
 
 // String returns a string that represents the Set
 func (s *Set[T]) String() string {
-	str := "Set{"
-	items_str := make([]string, 0)
+	var t T
+	str := fmt.Sprintf("Set[%s]{", reflect.TypeOf(t).String())
+	itemsStr := make([]string, 0)
 	for item := range s.store {
-		items_str = append(items_str, fmt.Sprintf("%v", item))
+		itemsStr = append(itemsStr, fmt.Sprintf("%v", item))
 	}
-	str += strings.Join(items_str, " ")
+	str += strings.Join(itemsStr, " ")
 	str += "}"
 	return str
 }
