@@ -39,12 +39,15 @@ func (s *Set[T]) String() string {
 	return str
 }
 
-// Add adds an item to the Set
-func (s *Set[T]) Add(item T) {
-	s.store[item] = struct{}{}
+// Add adds item(s) to the Set
+func (s *Set[T]) Add(items ...T) {
+	for _, item := range items {
+		s.store[item] = struct{}{}
+	}
 }
 
-// Remove removes an item from the Set. Returns error if the item is not in the Set.
+// Remove removes a single item from the Set. Returns error if the item is not in the Set
+// See also: Discard()
 func (s *Set[T]) Remove(item T) error {
 	if s.Contains(item) {
 		delete(s.store, item)
@@ -53,9 +56,12 @@ func (s *Set[T]) Remove(item T) error {
 	return fmt.Errorf("item not found: %v ", item)
 }
 
-// Discard removes an item from the Set if exists.
-func (s *Set[T]) Discard(item T) {
-	delete(s.store, item)
+// Discard removes item(s) from the Set if exist
+// See also: Remove()
+func (s *Set[T]) Discard(items ...T) {
+	for _, item := range items {
+		delete(s.store, item)
+	}
 }
 
 // Len returns the number of items in the Set
@@ -83,7 +89,7 @@ func (s *Set[T]) Update(others ...*Set[T]) {
 	}
 }
 
-// Pop removes an arbitrary item from the Set and returns it. Returns error if the Set is empty.
+// Pop removes an arbitrary item from the Set and returns it. Returns error if the Set is empty
 func (s *Set[T]) Pop() (T, error) {
 	var item T
 	if s.IsEmpty() {

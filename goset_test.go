@@ -9,39 +9,31 @@ import (
 func TestSet_Len(t *testing.T) {
 	s := NewSet[string]()
 	require.Equal(t, s.Len(), 0)
-	s.Add("a")
-	s.Add("a")
+	s.Add("a", "a")
 	require.Equal(t, s.Len(), 1)
-	s.Add("b")
-	s.Add("c")
+	s.Add("b", "c")
 	require.Equal(t, s.Len(), 3)
 }
 
 func TestSet_IsEmpty(t *testing.T) {
 	s := NewSet[string]()
 	require.True(t, s.IsEmpty())
-	s.Add("a")
-	s.Add("a")
+	s.Add("a", "b")
 	require.False(t, s.IsEmpty())
-	s.Add("b")
-	s.Add("c")
+	s.Add("b", "c")
 	require.False(t, s.IsEmpty())
 }
 
 func TestSet_Items(t *testing.T) {
 	s1 := NewSet[string]()
-	s1.Add("a")
-	s1.Add("b")
-	s1.Add("c")
+	s1.Add("a", "b", "c")
 	s2 := FromSlice(s1.Items())
 	require.True(t, s1.Equal(s2))
 }
 
 func TestFromSlice(t *testing.T) {
 	s1 := NewSet[string]()
-	s1.Add("c")
-	s1.Add("b")
-	s1.Add("a")
+	s1.Add("c", "b", "a")
 	s2 := FromSlice[string]([]string{"a", "b", "c"})
 	require.True(t, s1.Equal(s2))
 }
@@ -79,8 +71,7 @@ func TestSet_Copy(t *testing.T) {
 
 func TestSet_Update(t *testing.T) {
 	s := NewSet[int]()
-	s.Add(1)
-	s.Add(2)
+	s.Add(1, 2)
 	s2 := NewSet[int]()
 	s2.Add(3)
 	s2.Update(s)
