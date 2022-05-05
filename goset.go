@@ -8,14 +8,16 @@ import (
 )
 
 // Set represents a set data structure.
-// You should not call it directly, but to use NewSet() or FromSlice()
+// You should not call it directly, use NewSet() or FromSlice()
 type Set[T comparable] struct {
 	store map[T]struct{}
 }
 
-// NewSet returns a new empty Set
-func NewSet[T comparable]() *Set[T] {
-	return &Set[T]{store: make(map[T]struct{}, 0)}
+// NewSet returns a new Set of the given items
+func NewSet[T comparable](items ...T) *Set[T] {
+	set := &Set[T]{store: make(map[T]struct{}, 0)}
+	set.Add(items...)
+	return set
 }
 
 // FromSlice returns a new Set with all the items of the slice.

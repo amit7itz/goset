@@ -25,34 +25,32 @@ func TestSet_IsEmpty(t *testing.T) {
 }
 
 func TestSet_Items(t *testing.T) {
-	s1 := NewSet[string]()
-	s1.Add("a", "b", "c")
+	s1 := NewSet[string]("a", "b", "c")
 	s2 := FromSlice(s1.Items())
 	require.True(t, s1.Equal(s2))
 }
 
 func TestFromSlice(t *testing.T) {
-	s1 := NewSet[string]()
-	s1.Add("c", "b", "a")
+	s1 := NewSet[string]("c", "b", "a")
 	s2 := FromSlice[string]([]string{"a", "b", "c"})
 	require.True(t, s1.Equal(s2))
 }
 
 func TestSet_Union(t *testing.T) {
-	s1 := FromSlice[string]([]string{"a"})
-	s2 := FromSlice[string]([]string{"b", "c"})
-	s3 := FromSlice[string]([]string{"d", "e", "f"})
+	s1 := NewSet[string]("a")
+	s2 := NewSet[string]("b", "c")
+	s3 := NewSet[string]("d", "e", "f")
 	union := s1.Union(s2, s3)
 	require.Equal(t, s1.Len(), 1)
 	require.Equal(t, s2.Len(), 2)
 	require.Equal(t, s3.Len(), 3)
 	require.Equal(t, union.Len(), 6)
-	require.True(t, union.Equal(FromSlice[string]([]string{"a", "b", "c", "d", "e", "f"})))
+	require.True(t, union.Equal(NewSet[string]("a", "b", "c", "d", "e", "f")))
 }
 
 func TestSet_Equal(t *testing.T) {
-	s1 := FromSlice[string]([]string{"a", "b"})
-	s2 := FromSlice[string]([]string{"b", "a"})
+	s1 := NewSet[string]("a", "b")
+	s2 := NewSet[string]("b", "a")
 	require.True(t, s1.Equal(s2))
 	s2.Discard("a")
 	require.False(t, s1.Equal(s2))
@@ -63,7 +61,7 @@ func TestSet_Equal(t *testing.T) {
 }
 
 func TestSet_Copy(t *testing.T) {
-	s1 := FromSlice[string]([]string{"a", "b"})
+	s1 := NewSet[string]("a", "b")
 	s2 := s1.Copy()
 	require.True(t, s1 != s2)
 	require.True(t, s1.Equal(s2))
@@ -100,58 +98,58 @@ func TestSet_Pop(t *testing.T) {
 }
 
 func TestSet_Intersection(t *testing.T) {
-	s1 := FromSlice[string]([]string{"a", "b", "c", "d", "e", "f"})
-	s2 := FromSlice[string]([]string{"a", "", "c", "d", "e"})
-	s3 := FromSlice[string]([]string{"z", "d", "e", "k"})
+	s1 := NewSet[string]("a", "b", "c", "d", "e", "f")
+	s2 := NewSet[string]("a", "", "c", "d", "e")
+	s3 := NewSet[string]("z", "d", "e", "k")
 	intersection := s1.Intersection(s2, s3)
-	require.True(t, intersection.Equal(FromSlice[string]([]string{"e", "d"})))
+	require.True(t, intersection.Equal(NewSet[string]("e", "d")))
 }
 
 func TestSet_Difference(t *testing.T) {
-	s1 := FromSlice[string]([]string{"a", "b", "c", "d", "e", "f"})
-	s2 := FromSlice[string]([]string{"a", "", "c", "d", "e"})
-	s3 := FromSlice[string]([]string{"z", "d", "e", "k"})
+	s1 := NewSet[string]("a", "b", "c", "d", "e", "f")
+	s2 := NewSet[string]("a", "", "c", "d", "e")
+	s3 := NewSet[string]("z", "d", "e", "k")
 	difference := s1.Difference(s2, s3)
-	require.True(t, difference.Equal(FromSlice[string]([]string{"b", "f"})))
+	require.True(t, difference.Equal(NewSet[string]("b", "f")))
 }
 
 func TestSet_SymmetricDifference(t *testing.T) {
-	s1 := FromSlice[string]([]string{"a", "b", "c", "d", "e", "f"})
-	s2 := FromSlice[string]([]string{"z", "d", "e", "k"})
+	s1 := NewSet[string]("a", "b", "c", "d", "e", "f")
+	s2 := NewSet[string]("z", "d", "e", "k")
 	difference := s1.SymmetricDifference(s2)
-	require.True(t, difference.Equal(FromSlice[string]([]string{"a", "b", "c", "f", "z", "k"})))
+	require.True(t, difference.Equal(NewSet[string]("a", "b", "c", "f", "z", "k")))
 }
 
 func TestSet_IsSubset(t *testing.T) {
-	s1 := FromSlice[string]([]string{"a", "b", "c", "d", "e", "f"})
-	s2 := FromSlice[string]([]string{"z", "d", "e", "k"})
+	s1 := NewSet[string]("a", "b", "c", "d", "e", "f")
+	s2 := NewSet[string]("z", "d", "e", "k")
 	require.False(t, s2.IsSubset(s1))
-	s3 := FromSlice[string]([]string{"b", "c"})
+	s3 := NewSet[string]("b", "c")
 	require.True(t, s3.IsSubset(s1))
 	s4 := NewSet[string]()
 	require.True(t, s4.IsSubset(s1))
 }
 
 func TestSet_IsSuperset(t *testing.T) {
-	s1 := FromSlice[string]([]string{"a", "b", "c", "d", "e", "f"})
-	s2 := FromSlice[string]([]string{"z", "d", "e", "k"})
+	s1 := NewSet[string]("a", "b", "c", "d", "e", "f")
+	s2 := NewSet[string]("z", "d", "e", "k")
 	require.False(t, s1.IsSuperset(s2))
-	s3 := FromSlice[string]([]string{"b", "c"})
+	s3 := NewSet[string]("b", "c")
 	require.True(t, s1.IsSuperset(s3))
 	s4 := NewSet[string]()
 	require.True(t, s1.IsSuperset(s4))
 }
 
 func TestSet_IsDisjoint(t *testing.T) {
-	s1 := FromSlice[string]([]string{"a", "b", "c", "d", "e", "f"})
-	s2 := FromSlice[string]([]string{"z", "d", "e", "k"})
+	s1 := NewSet[string]("a", "b", "c", "d", "e", "f")
+	s2 := NewSet[string]("z", "d", "e", "k")
 	require.False(t, s1.IsDisjoint(s2))
-	s3 := FromSlice[string]([]string{"g", "h", "i"})
+	s3 := NewSet[string]("g", "h", "i")
 	require.True(t, s1.IsDisjoint(s3))
 }
 
 func TestSet_String(t *testing.T) {
-	s := FromSlice[string]([]string{"a", "b"})
+	s := NewSet[string]("a", "b")
 	str := fmt.Sprintf("%v", s)
 	possibleOutputs := []string{"Set[string]{a b}", "Set{b a}"}
 	require.Contains(t, possibleOutputs, str)
