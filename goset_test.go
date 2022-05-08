@@ -24,10 +24,24 @@ func TestSet_IsEmpty(t *testing.T) {
 	require.False(t, s.IsEmpty())
 }
 
+func BenchmarkSet_Items(b *testing.B) {
+	s1 := NewSet[string]("a", "b", "c")
+
+	for i := 0; i < b.N; i++ {
+		s1.Items()
+	}
+}
+
 func TestSet_Items(t *testing.T) {
 	s1 := NewSet[string]("a", "b", "c")
 	s2 := FromSlice(s1.Items())
 	require.True(t, s1.Equal(s2))
+}
+
+func BenchmarkFromSlice(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		FromSlice[string]([]string{"a", "b", "c"})
+	}
 }
 
 func TestFromSlice(t *testing.T) {

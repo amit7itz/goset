@@ -23,9 +23,7 @@ func NewSet[T comparable](items ...T) *Set[T] {
 // FromSlice returns a new Set with all the items of the slice.
 func FromSlice[T comparable](slice []T) *Set[T] {
 	set := NewSet[T]()
-	for _, item := range slice {
-		set.Add(item)
-	}
+	set.Add(slice...)
 	return set
 }
 
@@ -33,7 +31,7 @@ func FromSlice[T comparable](slice []T) *Set[T] {
 func (s *Set[T]) String() string {
 	var t T
 	str := fmt.Sprintf("Set[%s]{", reflect.TypeOf(t).String())
-	itemsStr := make([]string, 0)
+	itemsStr := make([]string, 0, s.Len())
 	for item := range s.store {
 		itemsStr = append(itemsStr, fmt.Sprintf("%v", item))
 	}
@@ -116,7 +114,7 @@ func (s *Set[T]) Copy() *Set[T] {
 
 // Items returns a slice of all the Set items
 func (s *Set[T]) Items() []T {
-	items := make([]T, 0)
+	items := make([]T, 0, s.Len())
 	for item := range s.store {
 		items = append(items, item)
 	}
