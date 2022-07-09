@@ -79,6 +79,8 @@ Methods:
 - Contains
 - Copy
 - Discard
+- For
+- ForWithBreak
 - IsEmpty
 - Items
 - Len

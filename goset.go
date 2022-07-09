@@ -1,8 +1,8 @@
 package goset
 
 import (
-	"errors"
 	"fmt"
+	"github.com/amit7itz/goset/store"
 	"reflect"
 	"strings"
 )
@@ -10,12 +10,12 @@ import (
 // Set represents a set data structure.
 // You should not call it directly, use NewSet() or FromSlice()
 type Set[T comparable] struct {
-	store map[T]struct{}
+	store store.SetStore[T]
 }
 
 // NewSet returns a new Set of the given items
 func NewSet[T comparable](items ...T) *Set[T] {
-	set := &Set[T]{store: make(map[T]struct{}, 0)}
+	set := &Set[T]{store: store.NewSimpleStore[T]()}
 	set.Add(items...)
 	return set
 }
@@ -27,98 +27,88 @@ func FromSlice[T comparable](slice []T) *Set[T] {
 	return set
 }
 
-// String returns a string that represents the Set
-func (s *Set[T]) String() string {
-	var t T
-	str := fmt.Sprintf("Set[%s]{", reflect.TypeOf(t).String())
-	itemsStr := make([]string, 0, s.Len())
-	for item := range s.store {
-		itemsStr = append(itemsStr, fmt.Sprintf("%v", item))
-	}
-	str += strings.Join(itemsStr, " ")
-	str += "}"
-	return str
-}
-
 // Add adds item(s) to the Set
 func (s *Set[T]) Add(items ...T) {
-	for _, item := range items {
-		s.store[item] = struct{}{}
-	}
+	s.store.Add(items...)
 }
 
 // Remove removes a single item from the Set. Returns error if the item is not in the Set
 // See also: Discard()
 func (s *Set[T]) Remove(item T) error {
-	if s.Contains(item) {
-		delete(s.store, item)
-		return nil
-	}
-	return fmt.Errorf("item not found: %v ", item)
+	return s.store.Remove(item)
 }
 
 // Discard removes item(s) from the Set if exist
 // See also: Remove()
 func (s *Set[T]) Discard(items ...T) {
-	for _, item := range items {
-		delete(s.store, item)
-	}
+	s.store.Discard(items...)
 }
 
 // Len returns the number of items in the Set
 func (s *Set[T]) Len() int {
-	return len(s.store)
+	return s.store.Len()
 }
 
 // IsEmpty returns true if there are no items in the Set
 func (s *Set[T]) IsEmpty() bool {
-	return len(s.store) == 0
+	return s.store.IsEmpty()
 }
 
 // Contains returns whether an item is in the Set
 func (s *Set[T]) Contains(item T) bool {
-	_, ok := s.store[item]
-	return ok
+	return s.store.Contains(item)
+}
+
+// Pop removes an arbitrary item from the Set and returns it. Returns error if the Set is empty
+func (s *Set[T]) Pop() (T, error) {
+	return s.store.Pop()
+}
+
+// Items returns a slice of all the Set items
+func (s *Set[T]) Items() []T {
+	return s.store.Items()
+}
+
+// For runs a function on all the items in the Set
+func (s *Set[T]) For(f func(item T)) {
+	s.store.For(f)
+}
+
+// ForWithBreak runs a function on all the items in the store
+// if f returns false, the iteration stops
+func (s *Set[T]) ForWithBreak(f func(item T) bool) {
+	s.store.ForWithBreak(f)
+}
+
+// String returns a string that represents the Set
+func (s *Set[T]) String() string {
+	var t T
+	str := fmt.Sprintf("Set[%s]{", reflect.TypeOf(t).String())
+	itemsStr := make([]string, 0, s.Len())
+	s.store.For(func(item T) {
+		itemsStr = append(itemsStr, fmt.Sprintf("%v", item))
+	})
+	str += strings.Join(itemsStr, " ")
+	str += "}"
+	return str
 }
 
 // Update adds all the items from the other Sets to the current Set
 func (s *Set[T]) Update(others ...*Set[T]) {
 	for _, other := range others {
-		for item := range other.store {
+		other.store.For(func(item T) {
 			s.Add(item)
-		}
+		})
 	}
-}
-
-// Pop removes an arbitrary item from the Set and returns it. Returns error if the Set is empty
-func (s *Set[T]) Pop() (T, error) {
-	var item T
-	if s.IsEmpty() {
-		return item, errors.New("set is empty")
-	}
-	for item = range s.store {
-		break
-	}
-	s.Discard(item)
-	return item, nil
 }
 
 // Copy returns a new Set with the same items as the current Set
 func (s *Set[T]) Copy() *Set[T] {
 	set := NewSet[T]()
-	for item := range s.store {
+	s.store.For(func(item T) {
 		set.Add(item)
-	}
+	})
 	return set
-}
-
-// Items returns a slice of all the Set items
-func (s *Set[T]) Items() []T {
-	items := make([]T, 0, s.Len())
-	for item := range s.store {
-		items = append(items, item)
-	}
-	return items
 }
 
 // Equal returns whether the current Set contains the same items as the other one
@@ -126,12 +116,15 @@ func (s *Set[T]) Equal(other *Set[T]) bool {
 	if s.Len() != other.Len() {
 		return false
 	}
-	for item := range s.store {
+	equal := true
+	s.store.ForWithBreak(func(item T) bool {
 		if !other.Contains(item) {
-			return false
+			equal = false
+			return false // stop iteration
 		}
-	}
-	return true
+		return true
+	})
+	return equal
 }
 
 // Union returns a new Set of the items from the current set and all others
@@ -144,7 +137,7 @@ func (s *Set[T]) Union(others ...*Set[T]) *Set[T] {
 // Intersection returns a new Set with the common items of the current set and all others.
 func (s *Set[T]) Intersection(others ...*Set[T]) *Set[T] {
 	intersectionSet := NewSet[T]()
-	for item := range s.store {
+	s.store.For(func(item T) {
 		inAllOthers := true
 		for _, other := range others {
 			if !other.Contains(item) {
@@ -155,14 +148,14 @@ func (s *Set[T]) Intersection(others ...*Set[T]) *Set[T] {
 		if inAllOthers {
 			intersectionSet.Add(item)
 		}
-	}
+	})
 	return intersectionSet
 }
 
 // Difference returns a new Set of all the items in the current Set that are not in any of the others
 func (s *Set[T]) Difference(others ...*Set[T]) *Set[T] {
 	differenceSet := NewSet[T]()
-	for item := range s.store {
+	s.store.For(func(item T) {
 		inAnyOther := false
 		for _, other := range others {
 			if other.Contains(item) {
@@ -173,23 +166,23 @@ func (s *Set[T]) Difference(others ...*Set[T]) *Set[T] {
 		if !inAnyOther {
 			differenceSet.Add(item)
 		}
-	}
+	})
 	return differenceSet
 }
 
 // SymmetricDifference returns all the items that exist in only one of the Sets
 func (s *Set[T]) SymmetricDifference(other *Set[T]) *Set[T] {
 	symmetricDifferenceSet := NewSet[T]()
-	for item := range s.store {
+	s.store.For(func(item T) {
 		if !other.Contains(item) {
 			symmetricDifferenceSet.Add(item)
 		}
-	}
-	for item := range other.store {
+	})
+	other.store.For(func(item T) {
 		if !s.Contains(item) {
 			symmetricDifferenceSet.Add(item)
 		}
-	}
+	})
 	return symmetricDifferenceSet
 }
 

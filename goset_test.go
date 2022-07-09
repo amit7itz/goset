@@ -38,6 +38,34 @@ func TestSet_Items(t *testing.T) {
 	require.True(t, s1.Equal(s2))
 }
 
+func TestSet_For(t *testing.T) {
+	s1 := NewSet[string]("a", "b", "c")
+	s2 := NewSet[string]("a", "b", "c")
+	counter := 0
+	s1.For(func(item string) {
+		s2.Discard(item)
+		counter++
+	})
+	require.Equal(t, counter, s1.Len())
+	require.True(t, s2.IsEmpty())
+}
+
+func TestSet_ForWithBreak(t *testing.T) {
+	s1 := NewSet[string]("a", "b", "c")
+	s2 := NewSet[string]("a", "b", "c")
+	counter := 0
+	s1.ForWithBreak(func(item string) bool {
+		if counter == 2 {
+			return false
+		}
+		counter++
+		s2.Discard(item)
+		return true
+	})
+	require.Equal(t, 2, counter)
+	require.Equal(t, 1, s2.Len())
+}
+
 func BenchmarkFromSlice(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		FromSlice[string]([]string{"a", "b", "c"})
