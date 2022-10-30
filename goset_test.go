@@ -207,9 +207,10 @@ func TestSetWithStruct(t *testing.T) {
 }
 
 type DummyStructWithMap struct {
-	A int          `json:"a"`
-	B string       `json:"b"`
-	S *Set[string] `json:"s"`
+	A int                     `json:"a"`
+	B string                  `json:"b"`
+	S *Set[string]            `json:"s"`
+	M map[string]*Set[string] `json:"m"`
 }
 
 func TestSet_MarshalJSON(t *testing.T) {
@@ -221,11 +222,11 @@ func TestSet_MarshalJSON(t *testing.T) {
 	require.NoError(t, err)
 	require.True(t, s1.Equal(s2))
 
-	d := DummyStructWithMap{A: 123, B: "test string", S: s1}
+	d := DummyStructWithMap{A: 123, B: "test string", S: s1, M: map[string]*Set[string]{"bla": s1}}
 	bytes, err = json.Marshal(d)
 	require.NoError(t, err)
-	d2 := DummyStructWithMap{S: NewSet[string]()}
+	d2 := DummyStructWithMap{}
 	err = json.Unmarshal(bytes, &d2)
 	require.NoError(t, err)
-	require.True(t, d.S.Equal(d2.S))
+	require.True(t, d.M["bla"].Equal(d2.M["bla"]))
 }

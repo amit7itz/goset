@@ -208,5 +208,8 @@ func (s *Set[T]) MarshalJSON() ([]byte, error) {
 }
 
 func (s *Set[T]) UnmarshalJSON(b []byte) error {
+	if s.store == nil {
+		s.store = store.NewSimpleStore[T]()
+	}
 	return s.store.UnmarshalJSON(b)
 }
