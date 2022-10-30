@@ -1,3 +1,4 @@
+[![Go Report Card](https://goreportcard.com/badge/github.com/amit7itz/goset)](https://goreportcard.com/report/github.com/amit7itz/goset)
 # GoSet
 
 🏆 **`goset` is a generic Go implementation of the Set data structure**
