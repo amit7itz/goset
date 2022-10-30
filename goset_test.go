@@ -1,6 +1,7 @@
 package goset
 
 import (
+	"encoding/json"
 	"fmt"
 	"github.com/stretchr/testify/require"
 	"testing"
@@ -203,4 +204,28 @@ func TestSetWithStruct(t *testing.T) {
 	}
 	peopleSet := NewSet(Person{Name: "Amit"}, Person{Name: "Amit"})
 	require.Equal(t, peopleSet.Len(), 1)
+}
+
+type DummyStructWithMap struct {
+	A int          `json:"a"`
+	B string       `json:"b"`
+	S *Set[string] `json:"s"`
+}
+
+func TestSet_MarshalJSON(t *testing.T) {
+	s1 := NewSet[string]("a", "b", "c", "d", "e", "f")
+	bytes, err := json.Marshal(s1)
+	require.NoError(t, err)
+	s2 := NewSet[string]()
+	err = json.Unmarshal(bytes, &s2)
+	require.NoError(t, err)
+	require.True(t, s1.Equal(s2))
+
+	d := DummyStructWithMap{A: 123, B: "test string", S: s1}
+	bytes, err = json.Marshal(d)
+	require.NoError(t, err)
+	d2 := DummyStructWithMap{S: NewSet[string]()}
+	err = json.Unmarshal(bytes, &d2)
+	require.NoError(t, err)
+	require.True(t, d.S.Equal(d2.S))
 }

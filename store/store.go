@@ -1,6 +1,7 @@
 package store
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 )
@@ -16,6 +17,8 @@ type SetStore[T comparable] interface {
 	Items() []T
 	For(func(item T))
 	ForWithBreak(func(item T) bool)
+	MarshalJSON() ([]byte, error)
+	UnmarshalJSON(b []byte) error
 }
 
 type SimpleSetStore[T comparable] struct {
@@ -106,4 +109,18 @@ func (s *SimpleSetStore[T]) ForWithBreak(f func(item T) bool) {
 			break
 		}
 	}
+}
+
+func (s *SimpleSetStore[T]) MarshalJSON() ([]byte, error) {
+	return json.Marshal(s.Items())
+}
+
+func (s *SimpleSetStore[T]) UnmarshalJSON(b []byte) error {
+	var items []T
+	err := json.Unmarshal(b, &items)
+	if err != nil {
+		return err
+	}
+	s.Add(items...)
+	return nil
 }

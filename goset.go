@@ -202,3 +202,11 @@ func (s *Set[T]) IsSubset(other *Set[T]) bool {
 func (s *Set[T]) IsSuperset(other *Set[T]) bool {
 	return other.IsSubset(s)
 }
+
+func (s *Set[T]) MarshalJSON() ([]byte, error) {
+	return s.store.MarshalJSON()
+}
+
+func (s *Set[T]) UnmarshalJSON(b []byte) error {
+	return s.store.UnmarshalJSON(b)
+}
