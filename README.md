@@ -1,5 +1,5 @@
 [![Go Report Card](https://goreportcard.com/badge/github.com/amit7itz/goset)](https://goreportcard.com/report/github.com/amit7itz/goset)
-![Build Status](https://github.com/amit7itz/goset/actions/workflows/test.yml/badge.svg)
+![Build Status](https://github.com/amit7itz/goset/actions/workflows/test.yaml/badge.svg)
 # GoSet
 
 🏆 **`goset` is a generic Go implementation of the Set data structure**
