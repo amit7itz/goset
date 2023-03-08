@@ -3,8 +3,9 @@ package goset
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/stretchr/testify/require"
 	"testing"
+
+	"github.com/stretchr/testify/require"
 )
 
 func TestSet_Len(t *testing.T) {
@@ -194,7 +195,7 @@ func TestSet_IsDisjoint(t *testing.T) {
 func TestSet_String(t *testing.T) {
 	s := NewSet[string]("a", "b")
 	str := fmt.Sprintf("%v", s)
-	possibleOutputs := []string{"Set[string]{a b}", "Set{b a}"}
+	possibleOutputs := []string{"Set[string]{a b}", "Set[string]{b a}"}
 	require.Contains(t, possibleOutputs, str)
 }
 
