@@ -105,7 +105,7 @@ func (s *SimpleSetStore[T]) For(f func(item T)) {
 // if f returns false, the iteration stops
 func (s *SimpleSetStore[T]) ForWithBreak(f func(item T) bool) {
 	for item := range s.store {
-		if f(item) == false {
+		if !f(item) {
 			break
 		}
 	}
